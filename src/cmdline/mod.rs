@@ -19,6 +19,18 @@ pub struct Rectangle {
 	pub height: isize,
 }
 
+impl Rectangle {
+	pub fn fits_in(&mut self, parent: &mut Rectangle) -> bool {
+		if self.left + self.width > parent.width {
+			return false;
+		}
+		if self.top + self.height > parent.height {
+			return false;
+		}
+		true
+	}
+}
+
 pub struct Options {
 	// Files
 	pub png_file_name: String,

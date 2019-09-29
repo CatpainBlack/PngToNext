@@ -63,4 +63,5 @@ custom_error! {pub PngError
 	ChunkError="PNG Chunk error",
 	InterlaceUnsupported="Interlaced PNGs are not supported",
 	UnsupportedColourDepth="Unsupported colour depth",
+	InvalidCrop="Crop region does not fall wholly inside image"
 }

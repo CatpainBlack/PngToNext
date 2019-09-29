@@ -1,5 +1,9 @@
+use std::fs::File;
+use std::io::Write;
+
 use crate::cmdline::Options;
 use crate::convert::Palette;
+use crate::convert::Process;
 use crate::png::Png;
 use crate::png::PngError;
 
@@ -21,16 +25,23 @@ fn main() -> Result<(), PngError> {
 			println!("Palette entries: {}", png.palette.len());
 		}
 		println!("Output Type: {}", options.output_type);
-		if let Some(c) = options.crop_to {
-			println!("Crop: left={},top={} width={},height={}", c.left, c.top, c.width, c.height);
-		}
 	}
 
-	match options.bits {
-		8 => println!("{}", png.eight_bit_palette().iter().map(|p| format!("0x{:02X}", p)).collect::<Vec<String>>().join(",")),
-		9 => println!("{}", png.nine_bit_palette().iter().map(|p| format!("0x{:04X}", p)).collect::<Vec<String>>().join(",")),
-		_ => println!("Unknow bit depth")
+	if let Some(c) = options.crop_to {
+		if options.verbose {
+			println!("Crop: left={},top={} width={},height={}", c.left, c.top, c.width, c.height);
+		}
+		png = png.copy_rect(c)?;
 	}
+
+	let mut out = File::create("test.sl2").expect("Could not create file!");
+	out.write_all(&mut png.image);
+
+//	match options.bits {
+//		8 => println!("{}", png.eight_bit_palette().iter().map(|p| format!("0x{:02X}", p)).collect::<Vec<String>>().join(",")),
+//		9 => println!("{}", png.nine_bit_palette().iter().map(|p| format!("0x{:04X}", p)).collect::<Vec<String>>().join(",")),
+//		_ => println!("Unknow bit depth")
+//	}
 
 	Ok(())
 }

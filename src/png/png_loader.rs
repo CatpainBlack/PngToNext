@@ -1,9 +1,11 @@
-use crate::png::{Png, Chunk, ColourType};
-use crate::png::PngError;
 use std::fs::File;
-use std::io::{Seek, SeekFrom, Read, Cursor};
-use byteorder::{ReadBytesExt, BigEndian};
+use std::io::{Cursor, Read, Seek, SeekFrom};
+
+use byteorder::{BigEndian, ReadBytesExt};
 use rgb::FromSlice;
+
+use crate::png::{Chunk, ColourType, Png};
+use crate::png::PngError;
 
 impl Png {
 	fn read_header(file: &mut File) -> Result<(), PngError> {

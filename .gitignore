@@ -104,3 +104,11 @@ Cargo.lock
 
 # End of https://www.gitignore.io/api/rust,clion
 
+
+
+#Added by cargo
+#
+#already existing elements are commented out
+
+/target
+#**/*.rs.bk

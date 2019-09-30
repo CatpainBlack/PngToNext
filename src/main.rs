@@ -1,9 +1,9 @@
 use crate::cmdline::Options;
 use crate::convert::Process;
-use crate::png::Png;
-use crate::image::{Image, ImageType};
-use crate::image::PixelFormat;
 use crate::errors::CmdError;
+use crate::image::Image;
+use crate::image::PixelFormat;
+use crate::png::Png;
 
 mod cmdline;
 mod png;
@@ -29,22 +29,17 @@ fn main() -> Result<(), CmdError> {
 
     if let Some(c) = options.crop_to {
         if options.verbose {
-            println!("Crop: left={},top={} width={},height={}", c.left, c.top, c.width, c.height);
+            println!("Crop dimensions:\n\tleft:\t{}\n\ttop:\t{}\n\twidth:\t{}\n\theight:\t{}", c.left, c.top, c.width, c.height);
         }
         png = png.copy_rect(c)?;
     }
 
-    let mut img8 = Image::from(&png);
-    let mut img4 = Image::from(&png);
-
-    img8.resample(PixelFormat::EightBit)?;
-    img4.resample(PixelFormat::FourBit)?;
-
-    img8.save(ImageType::Nxi, "test.nxi")?;
-    img8.save(ImageType::Sl2, "test.sl2")?;
-    img8.save(ImageType::Raw, "test.raw")?;
-    img8.save(ImageType::Pal, "test.pal")?;
-    img8.save(ImageType::Npl, "test.npl")?;
+    let mut img = Image::from(&png);
+    img.resample(PixelFormat::EightBit)?;
+    if options.verbose {
+        println!("Saving image file: {}", options.out_file_name);
+    }
+    img.save(options.output_type, &options.out_file_name)?;
 
     Ok(())
 }

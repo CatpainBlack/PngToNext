@@ -1,11 +1,13 @@
-use rgb::RGB8;
-
 extern crate custom_error;
 
+use std::fmt::{Display, Error, Formatter};
+
 use custom_error::custom_error;
-use std::fmt::{Display, Formatter, Error};
+use rgb::RGB8;
+
 
 mod img_from;
+mod image_impl;
 pub mod rectangle;
 
 #[derive(Clone)]
@@ -16,6 +18,7 @@ pub enum ImageType {
     Pal,
     Npl,
     Sl2,
+    Slr,
 }
 
 pub enum PixelFormat {
@@ -35,7 +38,8 @@ pub struct Image {
 custom_error! {pub ImageError
     BitDepth{bpp:u8}="Unsupported bit depth {bpp}",
     Resample="Could not resample pixel data",
-    IOError{m:String}="IO Error {m}"
+    IOError{m:String}="IO Error {m}",
+    L2Size="Image must be 256x192 8 bit indexed colour"
 }
 
 impl std::convert::From<std::io::Error> for ImageError {
@@ -53,6 +57,7 @@ impl Display for ImageType {
             ImageType::Pal => write!(f, "Pal"),
             ImageType::Npl => write!(f, "Npl"),
             ImageType::Sl2 => write!(f, "Sl2"),
+            ImageType::Slr => write!(f, "slr")
         }
     }
 }

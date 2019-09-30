@@ -1,4 +1,5 @@
 use custom_error::custom_error;
+
 use crate::image::ImageError;
 use crate::png::PngError;
 

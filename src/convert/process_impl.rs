@@ -1,7 +1,7 @@
 use crate::convert::Process;
+use crate::image::rectangle::Rectangle;
 use crate::png::Png;
 use crate::png::PngError;
-use crate::image::rectangle::Rectangle;
 
 impl Process for Png {
     fn copy_rect(self, mut rect: Rectangle) -> Result<Png, PngError> {

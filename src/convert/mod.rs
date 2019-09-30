@@ -1,6 +1,6 @@
-use crate::cmdline::Rectangle;
 use crate::png::Png;
 use crate::png::PngError;
+use crate::image::rectangle::Rectangle;
 
 mod palette_entry;
 mod palette;

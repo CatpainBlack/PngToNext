@@ -3,7 +3,9 @@ use std::str::FromStr;
 
 use argparse::{ArgumentParser, Store, StoreConst, StoreTrue};
 
-use crate::cmdline::{Options, OutputType, Rectangle};
+use crate::cmdline::Options;
+use crate::image::ImageType;
+use crate::image::rectangle::Rectangle;
 
 impl Options {
 	fn parse_number(n: &str, error: &str) -> isize {
@@ -20,7 +22,7 @@ impl Options {
 		let mut options = Options {
 			png_file_name: "".to_string(),
 			out_file_name: "".to_string(),
-			output_type: OutputType::Raw,
+			output_type: ImageType::Raw,
 			pal_priority: false,
 			bits: 9,
 			crop_to: None,
@@ -42,12 +44,12 @@ impl Options {
 				.add_option(&["-c", "--crop"], Store, "Crop image (left,top,width,height)");
 
 			parser.refer(&mut options.output_type)
-				.add_option(&["-r", "--raw"], StoreConst(OutputType::Raw), "Save the image as raw data")
-				.add_option(&["-2", "--sl2"], StoreConst(OutputType::Sl2), "Save the image as a SL2 data (raw layer 2 image data)")
-				.add_option(&["-n", "--nxi"], StoreConst(OutputType::Nxi), "the the image as a NXI file")
-				.add_option(&["-a", "--asm"], StoreConst(OutputType::Asm), "Save data as assembly source")
-				.add_option(&["-p", "--pal"], StoreConst(OutputType::Pal), "Save the palette as a .pal file")
-				.add_option(&["-N", "--npl"], StoreConst(OutputType::Npl), "Save the palette as a .npl file");
+				.add_option(&["-r", "--raw"], StoreConst(ImageType::Raw), "Save the image as raw data")
+				.add_option(&["-2", "--sl2"], StoreConst(ImageType::Sl2), "Save the image as a SL2 data (raw layer 2 image data)")
+				.add_option(&["-n", "--nxi"], StoreConst(ImageType::Nxi), "the the image as a NXI file")
+				.add_option(&["-a", "--asm"], StoreConst(ImageType::Asm), "Save data as assembly source")
+				.add_option(&["-p", "--pal"], StoreConst(ImageType::Pal), "Save the palette as a .pal file")
+				.add_option(&["-N", "--npl"], StoreConst(ImageType::Npl), "Save the palette as a .npl file");
 
 			parser.refer(&mut options.bits)
 				.add_option(&["-8", "--8bit"], StoreConst(8), "Save palette data in 8 bit format")

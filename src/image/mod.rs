@@ -8,7 +8,6 @@ use rgb::RGB8;
 
 mod img_from;
 mod image_impl;
-pub mod rectangle;
 
 #[derive(Clone)]
 pub enum ImageType {

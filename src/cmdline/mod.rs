@@ -1,5 +1,5 @@
 use crate::image::ImageType;
-use crate::image::rectangle::Rectangle;
+use crate::primitives::rectangle::Rectangle;
 
 pub mod parser;
 

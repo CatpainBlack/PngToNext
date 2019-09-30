@@ -10,6 +10,7 @@ mod png;
 mod convert;
 mod image;
 mod errors;
+mod primitives;
 
 fn main() -> Result<(), CmdError> {
     let options = Options::parse();

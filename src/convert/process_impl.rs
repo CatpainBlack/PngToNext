@@ -1,5 +1,5 @@
 use crate::convert::Process;
-use crate::image::rectangle::Rectangle;
+use crate::primitives::rectangle::Rectangle;
 use crate::png::Png;
 use crate::png::PngError;
 

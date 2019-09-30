@@ -6,8 +6,7 @@ use argparse::{ArgumentParser, Store, StoreConst, StoreTrue};
 
 use crate::cmdline::{Options, PalettePlacement};
 use crate::image::ImageType;
-use crate::image::rectangle::Rectangle;
-use std::ffi::OsStr;
+use crate::primitives::rectangle::Rectangle;
 
 impl Options {
     fn parse_number(n: &str, error: &str) -> isize {

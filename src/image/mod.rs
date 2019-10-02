@@ -31,6 +31,7 @@ pub struct Image {
     pub bits_per_pixel: u32,
     pub pixels: Vec<u8>,
     pub transparency: u8,
+    pub next_palette: Vec<u16>,
     rgb_pal: Vec<RGB8>,
 }
 
@@ -38,7 +39,8 @@ custom_error! {pub ImageError
     BitDepth{bpp:u8}="Unsupported bit depth {bpp}",
     Resample="Could not resample pixel data",
     IOError{m:String}="IO Error {m}",
-    L2Size="Image must be 256x192 8 bit indexed colour"
+    L2Size="Image must be 256x192 8 bit indexed colour",
+    PaletteRemap="Could not remap colours"
 }
 
 impl std::convert::From<std::io::Error> for ImageError {

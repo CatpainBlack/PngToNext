@@ -1,9 +1,12 @@
 use crate::cmdline::Options;
-use crate::convert::Process;
+use crate::convert::{Process, LAYER2_DEFAULT};
 use crate::errors::CmdError;
 use crate::image::Image;
 use crate::image::PixelFormat;
 use crate::png::Png;
+use crate::png::PngError;
+use crate::image::ImageError;
+use std::process::exit;
 
 mod cmdline;
 mod png;
@@ -12,10 +15,23 @@ mod image;
 mod errors;
 mod primitives;
 
-fn main() -> Result<(), CmdError> {
-    let options = Options::parse();
+fn main() {
+    match convert_image() {
+        Ok(_) => {
+            exit(0);
+        }
+        Err(e) => {
+            match e {
+                CmdError::ImageError { source } => println!("{}", source),
+                CmdError::PngError { source } => println!("{}", source),
+            }
+            exit(1);
+        }
+    }
+}
 
-    println!("File Name: {}", options.png_file_name);
+fn convert_image() -> Result<(), CmdError> {
+    let options = Options::parse();
 
     let mut png = Png::new();
     png.load(&options.png_file_name)?;

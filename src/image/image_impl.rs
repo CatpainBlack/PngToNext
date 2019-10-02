@@ -3,15 +3,16 @@ extern crate bitstream_io;
 use std::fs::File;
 use std::io::{BufWriter, Cursor, Write};
 
-use byteorder::WriteBytesExt;
+use byteorder::{WriteBytesExt, ByteOrder};
 
 use crate::cmdline::PalettePlacement;
-use crate::convert::PaletteEntry;
+use crate::convert::{PaletteEntry, LAYER2_DEFAULT};
 use crate::image::{Image, ImageType, PixelFormat};
 use crate::image::ImageError;
 
-use self::bitstream_io::{BitReader, BitWriter, LittleEndian};
-
+use self::bitstream_io::{BitReader, BitWriter, LittleEndian, BigEndian};
+use std::ops::Index;
+use std::collections::HashMap;
 
 impl Image {
     fn indexed_upsample(&mut self, bpp: u32) -> Result<(), ImageError> {
@@ -50,14 +51,11 @@ impl Image {
     }
 
     fn write_pal(&mut self, w: &mut BufWriter<File>, transparency: Option<u8>) -> Result<(), ImageError> {
-        let count = 256 - self.rgb_pal.len();
-        for rgb in &self.rgb_pal {
-            if w.write_u16::<byteorder::LittleEndian>(rgb.as_9bit()).is_err() {
-                return Err(ImageError::IOError { m: "Error writing palette info".to_string() });
-            };
+        if self.next_palette.is_empty() {
+            self.convert_palette();
         }
-        for _ in 0..count {
-            if w.write_u16::<byteorder::LittleEndian>(0).is_err() {
+        for entry in &self.next_palette {
+            if w.write_u16::<byteorder::LittleEndian>(entry.clone()).is_err() {
                 return Err(ImageError::IOError { m: "Error writing palette info".to_string() });
             };
         }
@@ -91,10 +89,46 @@ impl Image {
         Ok(())
     }
 
+    fn convert_palette(&mut self) {
+        self.next_palette = vec![0; 256];
+        let mut c = 0;
+        for rgb in &self.rgb_pal {
+            self.next_palette[c] = rgb.as_9bit();
+            c += 1;
+        }
+    }
+
     fn validate_size(&self, w: usize, h: usize) -> Result<(), ImageError> {
         if self.width != w || self.height != h || self.bits_per_pixel != 8 {
             return Err(ImageError::L2Size);
         }
+        Ok(())
+    }
+
+    pub fn remap_colours(&mut self, new: &[u16]) -> Result<(), ImageError> {
+        if self.bits_per_pixel != 8 {
+            return Err(ImageError::BitDepth { bpp: self.bits_per_pixel as u8 });
+        }
+        if self.next_palette.is_empty() {
+            self.convert_palette();
+        }
+        let mut old_index = 0usize;
+        let mut remap_data: Vec<u8> = vec![0; 256];
+        for colour in &self.next_palette {
+            let alt_color = colour ^ 0x0100;
+            if let Some(new_index) = new.iter().position(|f| f == colour || f == &alt_color) {
+                remap_data[old_index] = new_index as u8;
+            } else {
+                return Err(ImageError::PaletteRemap);
+            }
+            old_index += 1;
+        }
+        let mut remapped: Vec<u8> = vec![];
+        for pixel in &self.pixels {
+            remapped.push(remap_data[pixel.clone() as usize]);
+        }
+        self.pixels.clear();
+        self.pixels.append(&mut remapped);
         Ok(())
     }
 
@@ -110,10 +144,12 @@ impl Image {
             ImageType::Npl => self.save_pal(name, Some(self.transparency)),
             ImageType::Sl2 => {
                 self.validate_size(256, 192)?;
+                self.remap_colours(LAYER2_DEFAULT)?;
                 self.save_raw(name, PalettePlacement::Omit)
             }
             ImageType::Slr => {
                 self.validate_size(128, 96)?;
+                self.remap_colours(LAYER2_DEFAULT)?;
                 self.save_raw(name, PalettePlacement::Omit)
             }
         }

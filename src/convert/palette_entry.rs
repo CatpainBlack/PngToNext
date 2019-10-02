@@ -16,6 +16,6 @@ impl PaletteEntry for RGB8 {
 		let g = (self.g as u32 * 7 / 255) as u16 & 7;
 		let b1 = (r << 5 | g << 2 | b >> 1) as u16;
 		let b2 = (b & 1) as u16;
-		b1 << 8 | b2
+		b2 << 8 | b1
 	}
 }

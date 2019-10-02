@@ -9,6 +9,7 @@ impl From<&Png> for Image {
             bits_per_pixel: png.bit_depth as u32,
             pixels: png.image.clone(),
             transparency: png.transparency_index,
+            next_palette: vec![],
             rgb_pal: png.palette.clone(),
         }
     }

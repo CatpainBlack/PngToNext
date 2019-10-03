@@ -120,10 +120,25 @@ impl Png {
         Ok(())
     }
 
+    pub fn bits_per_pixel(&self) -> Option<usize> {
+        match self.colour_type {
+            ColourType::Rgb => Some(3 * self.bit_depth as usize),
+            ColourType::Palette => Some(self.bit_depth as usize),
+            _ => None
+        }
+    }
+
     pub fn read_idat(&mut self, chunk: &Chunk) -> Result<(), PngError> {
         if self.compression_method == 0 {
-            let pixels = inflate::inflate_bytes_zlib(&chunk.data).unwrap();
-            let w = self.width * self.bit_depth as usize / 8;
+            let pixels = match inflate::inflate_bytes_zlib(&chunk.data) {
+                Ok(pixels) => pixels,
+                Err(_) => return Err(PngError::UnsupportedCompression),
+            };
+            let bpp = self.bits_per_pixel().unwrap_or(0);
+            if bpp == 0 {
+                return Err(PngError::UnsupportedColourDepth);
+            }
+            let w = self.width * bpp / 8;
             for f in 0..self.height as usize {
                 let start = f * (w as usize + 1usize) + 1;
                 let row = &pixels[start..start + w as usize];
@@ -136,7 +151,7 @@ impl Png {
     }
 
     pub fn read_trns(&mut self, chunk: &Chunk) -> Result<(), PngError> {
-		// Needs work...
+        // Needs work...
         let index = chunk.data
             .iter()
             .enumerate()

@@ -1,11 +1,9 @@
 use crate::cmdline::Options;
-use crate::convert::{Process, LAYER2_DEFAULT};
+use crate::convert::Process;
 use crate::errors::CmdError;
-use crate::image::Image;
+use crate::image::{Image, Block};
 use crate::image::PixelFormat;
 use crate::png::Png;
-use crate::png::PngError;
-use crate::image::ImageError;
 use std::process::exit;
 
 mod cmdline;
@@ -37,7 +35,7 @@ fn convert_image() -> Result<(), CmdError> {
     png.load(&options.png_file_name)?;
 
     if options.verbose {
-        println!("Loaded image: '{}', {}px x {}px [{} bits]", options.png_file_name, png.width, png.height, png.bit_depth);
+        println!("Loaded image: '{}', {}px x {}px [{} bits]", options.png_file_name, png.width, png.height, png.bits_per_pixel().unwrap_or(0));
         if !png.palette.is_empty() {
             println!("Palette entries: {}", png.palette.len());
         }
@@ -51,12 +49,22 @@ fn convert_image() -> Result<(), CmdError> {
         png = png.copy_rect(c)?;
     }
 
-    let mut img = Image::from(&png);
-    img.resample(PixelFormat::EightBit)?;
+    let mut img8 = Image::from(&png);
+    img8.resample(PixelFormat::EightBit)?;
+
+    let mut img4 = Image::from(&png);
+    img4.resample(PixelFormat::FourBit)?;
+
+
+    if let Some(tile) = Block::grab_from(&img8, 0, 0, 16) {
+        println!("{} {:?}", tile.hash, tile.hashes);
+    };
+
     if options.verbose {
         println!("Saving image file: {}", options.out_file_name);
     }
-    img.save(options.output_type, &options.out_file_name)?;
+
+    img8.save(options.output_type, &options.out_file_name)?;
 
     Ok(())
 }

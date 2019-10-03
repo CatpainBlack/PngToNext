@@ -5,6 +5,7 @@ use rgb::RGB8;
 
 mod png_loader;
 
+#[derive(Debug)]
 pub enum ColourType {
     Unknown,
     GrayScale,
@@ -64,5 +65,6 @@ custom_error! {pub PngError
 	ChunkError="PNG Chunk error",
 	InterlaceUnsupported="Interlaced PNGs are not supported",
 	UnsupportedColourDepth="Unsupported colour depth",
-	InvalidCrop="Crop region does not fall wholly inside image"
+	InvalidCrop="Crop region does not fall wholly inside image",
+	UnsupportedCompression="The image is compressed with an unsupported compression method"
 }

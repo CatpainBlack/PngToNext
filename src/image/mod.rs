@@ -8,6 +8,8 @@ use rgb::RGB8;
 
 mod img_from;
 mod image_impl;
+mod resample;
+mod tile_impl;
 
 #[derive(Clone)]
 pub enum ImageType {
@@ -33,6 +35,14 @@ pub struct Image {
     pub transparency: u8,
     pub next_palette: Vec<u16>,
     rgb_pal: Vec<RGB8>,
+}
+
+#[derive(Debug)]
+pub struct Block {
+    size: usize,
+    pub pixels: Vec<Vec<u8>>,
+    pub hash: String,
+    pub(crate) hashes: Vec<String>,
 }
 
 custom_error! {pub ImageError
@@ -61,4 +71,8 @@ impl Display for ImageType {
             ImageType::Slr => write!(f, "slr")
         }
     }
+}
+
+pub trait Hash {
+    fn hash(&self) -> String;
 }

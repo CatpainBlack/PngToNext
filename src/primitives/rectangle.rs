@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Rectangle {
     pub left: isize,
     pub top: isize,
@@ -6,6 +7,15 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
+    pub fn square(x: isize, y: isize, size: isize) -> Rectangle {
+        Rectangle {
+            left: x,
+            top: y,
+            width: size,
+            height: size,
+        }
+    }
+
     pub fn fits_in(&mut self, parent: &mut Rectangle) -> bool {
         if self.left + self.width > parent.width {
             return false;

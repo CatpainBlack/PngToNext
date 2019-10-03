@@ -6,7 +6,7 @@ impl From<&Png> for Image {
         Image {
             height: png.height,
             width: png.width,
-            bits_per_pixel: png.bit_depth as u32,
+            bits_per_pixel: png.bits_per_pixel().unwrap_or(0) as u32,
             pixels: png.image.clone(),
             transparency: png.transparency_index,
             next_palette: vec![],

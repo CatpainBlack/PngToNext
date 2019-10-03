@@ -1,51 +1,37 @@
 extern crate bitstream_io;
 
 use std::fs::File;
-use std::io::{BufWriter, Cursor, Write};
+use std::io::{BufWriter, Write};
 
-use byteorder::{WriteBytesExt, ByteOrder};
+use byteorder::WriteBytesExt;
 
 use crate::cmdline::PalettePlacement;
 use crate::convert::{PaletteEntry, LAYER2_DEFAULT};
 use crate::image::{Image, ImageType, PixelFormat};
 use crate::image::ImageError;
 
-use self::bitstream_io::{BitReader, BitWriter, LittleEndian, BigEndian};
-use std::ops::Index;
-use std::collections::HashMap;
+use crate::image::resample::Resample;
+use crate::primitives::rectangle::Rectangle;
 
 impl Image {
-    fn indexed_upsample(&mut self, bpp: u32) -> Result<(), ImageError> {
-        let mut converted: Vec<u8> = vec![];
-        let pixels = Cursor::new(&self.pixels);
-        let mut br = BitReader::endian(pixels, LittleEndian);
-        let mut bw = BitWriter::endian(&mut converted, LittleEndian);
-        for _row in 0..self.height {
-            for _col in 0..self.width {
-                let pix = br.read::<u8>(self.bits_per_pixel);
-                if pix.is_err() {
-                    return Err(ImageError::Resample);
-                }
-                if bw.write::<u8>(bpp, pix.unwrap()).is_err() {
-                    return Err(ImageError::Resample);
-                };
-            }
+    pub fn rect(&self) -> Rectangle {
+        Rectangle {
+            left: 0,
+            top: 0,
+            width: self.width as isize,
+            height: self.height as isize,
         }
-        self.pixels = converted.clone();
-        self.bits_per_pixel = bpp;
-        Ok(())
     }
 
     pub fn resample(&mut self, format: PixelFormat) -> Result<(), ImageError> {
-        if self.bits_per_pixel > 8 {
-            return Err(ImageError::BitDepth { bpp: self.bits_per_pixel as u8 });
-        }
-        let bits = match format {
+        let out_bits = match format {
             PixelFormat::FourBit => 4,
             PixelFormat::EightBit => 8,
         };
-        if bits > self.bits_per_pixel {
-            self.indexed_upsample(bits)?
+        if self.bits_per_pixel < out_bits {
+            self.indexed_upsample(out_bits)?;
+        } else if self.bits_per_pixel > 8 {
+            self.down_sample(out_bits)?;
         }
         Ok(())
     }
@@ -54,8 +40,16 @@ impl Image {
         if self.next_palette.is_empty() {
             self.convert_palette();
         }
+
+
         for entry in &self.next_palette {
             if w.write_u16::<byteorder::LittleEndian>(entry.clone()).is_err() {
+                return Err(ImageError::IOError { m: "Error writing palette info".to_string() });
+            };
+        }
+        let palette_len = 256 - self.next_palette.len();
+        for _c in 0..palette_len {
+            if w.write_u16::<byteorder::LittleEndian>(0).is_err() {
                 return Err(ImageError::IOError { m: "Error writing palette info".to_string() });
             };
         }
@@ -131,6 +125,7 @@ impl Image {
         self.pixels.append(&mut remapped);
         Ok(())
     }
+
 
     pub fn save(&mut self, image_type: ImageType, name: &str) -> Result<(), ImageError> {
         match image_type {

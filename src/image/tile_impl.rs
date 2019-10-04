@@ -1,19 +1,5 @@
-extern crate sha1;
-
-use sha1::{Sha1, Digest};
 use crate::image::{Block, Image, Hash};
 use crate::primitives::rectangle::Rectangle;
-
-impl Hash for Vec<Vec<u8>> {
-    fn hash(&self) -> String {
-        let mut hasher = Sha1::new();
-        for row in self {
-            hasher.input(row.as_slice());
-        }
-        let hash: Vec<String> = hasher.result().iter().map(|x| format!("{:02x}", x)).collect();
-        hash.join("")
-    }
-}
 
 impl Block {
     pub fn transform_hash(&self, flip: bool, mirror: bool, rotate: bool) -> String {
@@ -47,22 +33,21 @@ impl Block {
         self.hashes.push(self.transform_hash(true, true, true));
     }
 
-    pub fn grab_from(i: &Image, x: isize, y: isize, s: u8) -> Option<Block> {
-        let mut region = Rectangle::square(x, y, s as isize);
+    pub fn grab_from(i: &Image, left: isize, top: isize, s: u8) -> Option<Block> {
+        let mut region = Rectangle::square(left, top, s as isize);
         let fits = region.fits_in(&mut i.rect());
         if i.bits_per_pixel != 8 || !fits {
             return None;
         }
 
         let mut pixels: Vec<Vec<u8>> = vec![];
-        let top_row = region.top;
-        let bottom_row = region.top + region.height;
-        for row in top_row..bottom_row {
-            let start = (row + region.left) as usize;
-            let end = (start + region.width as usize) as usize;
-            let copied = i.pixels[start..end].to_vec().clone();
-            pixels.push(copied);
+
+        let mut start: usize = region.left as usize + (region.top as usize * i.width);
+        for _index in 0..region.height {
+            pixels.push(i.pixels[start..start + region.width as usize].to_vec().clone());
+            start += i.width;
         }
+
         let mut b = Block {
             size: s as usize,
             pixels,

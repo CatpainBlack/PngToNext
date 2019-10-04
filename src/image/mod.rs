@@ -1,15 +1,19 @@
 extern crate custom_error;
 
-use std::fmt::{Display, Error, Formatter};
-
 use custom_error::custom_error;
 use rgb::RGB8;
+use std::collections::HashMap;
+use crate::primitives::rectangle::Rectangle;
 
 
 mod img_from;
 mod image_impl;
 mod resample;
 mod tile_impl;
+mod from_impl;
+mod display_impl;
+mod hash_impl;
+mod block_set_impl;
 
 #[derive(Clone)]
 pub enum ImageType {
@@ -42,7 +46,16 @@ pub struct Block {
     size: usize,
     pub pixels: Vec<Vec<u8>>,
     pub hash: String,
-    pub(crate) hashes: Vec<String>,
+    pub hashes: Vec<String>,
+}
+
+pub struct BlockSet {
+    pub blocks: HashMap<String, Block>,
+    pub tile_size: Rectangle,
+}
+
+pub trait Hash {
+    fn hash(&self) -> String;
 }
 
 custom_error! {pub ImageError
@@ -53,26 +66,3 @@ custom_error! {pub ImageError
     PaletteRemap="Could not remap colours"
 }
 
-impl std::convert::From<std::io::Error> for ImageError {
-    fn from(e: std::io::Error) -> Self {
-        ImageError::IOError { m: e.to_string() }
-    }
-}
-
-impl Display for ImageType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        match self {
-            ImageType::Raw => write!(f, "Raw Data"),
-            ImageType::Nxi => write!(f, "NXI"),
-            ImageType::Asm => write!(f, "Assembler Source"),
-            ImageType::Pal => write!(f, "Pal"),
-            ImageType::Npl => write!(f, "Npl"),
-            ImageType::Sl2 => write!(f, "Sl2"),
-            ImageType::Slr => write!(f, "slr")
-        }
-    }
-}
-
-pub trait Hash {
-    fn hash(&self) -> String;
-}

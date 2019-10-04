@@ -7,20 +7,20 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
-    pub fn square(x: isize, y: isize, size: isize) -> Rectangle {
+    pub fn square(left: isize, top: isize, size: isize) -> Rectangle {
         Rectangle {
-            left: x,
-            top: y,
+            left,
+            top,
             width: size,
             height: size,
         }
     }
 
     pub fn fits_in(&mut self, parent: &mut Rectangle) -> bool {
-        if self.left + self.width > parent.width {
+        if (self.top + self.height) > parent.height {
             return false;
         }
-        if self.top + self.height > parent.height {
+        if (self.left + self.width) > parent.width {
             return false;
         }
         true

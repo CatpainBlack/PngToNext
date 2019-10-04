@@ -1,10 +1,11 @@
 use crate::cmdline::Options;
 use crate::convert::Process;
 use crate::errors::CmdError;
-use crate::image::{Image, Block};
+use crate::image::{Image, BlockSet};
 use crate::image::PixelFormat;
 use crate::png::Png;
 use std::process::exit;
+use crate::primitives::rectangle::Rectangle;
 
 mod cmdline;
 mod png;
@@ -56,15 +57,21 @@ fn convert_image() -> Result<(), CmdError> {
     img4.resample(PixelFormat::FourBit)?;
 
 
-    if let Some(tile) = Block::grab_from(&img8, 0, 0, 16) {
-        println!("{} {:?}", tile.hash, tile.hashes);
-    };
-
     if options.verbose {
-        println!("Saving image file: {}", options.out_file_name);
+        println!("Processing map data...");
+    }
+    let mut blocks = BlockSet::new(Rectangle::square(0, 0, 16));
+    blocks.process(&img8);
+    if options.verbose {
+        println!("Grabbed {} unique blocks", blocks.count());
     }
 
-    img8.save(options.output_type, &options.out_file_name)?;
+    if false {
+        if options.verbose {
+            println!("Saving image file: {}", options.out_file_name);
+        }
 
+        img8.save(options.output_type, &options.out_file_name)?;
+    }
     Ok(())
 }

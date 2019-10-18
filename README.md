@@ -5,7 +5,7 @@ Utility to convert PNG images to various ZX Next formats
 
 <pre>
 Usage:
-  target\debug\pngtonext.exe [OPTIONS] PNG [OUTPUT]
+  pngtonext [OPTIONS] PNG [OUTPUT]
 
 Png to ZX Next image conversion
 

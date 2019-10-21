@@ -5,7 +5,7 @@ use std::str::FromStr;
 use argparse::{ArgumentParser, Store, StoreConst, StoreTrue};
 
 use crate::cmdline::{Options, PalettePlacement};
-use crate::image::ImageType;
+use crate::image::{ImageType, PixelFormat};
 use crate::primitives::rectangle::Rectangle;
 
 impl Options {
@@ -47,7 +47,8 @@ impl Options {
                 ImageType::Pal => "pal",
                 ImageType::Npl => "npl",
                 ImageType::Sl2 => "sl2",
-                ImageType::Slr => "slr"
+                ImageType::Slr => "slr",
+                ImageType::Spr => "spr",
             };
             path.set_extension(ext);
             self.out_file_name = match path.file_name() {
@@ -66,6 +67,7 @@ impl Options {
             pal_priority: false,
             crop_to: None,
             pal_placement: PalettePlacement::Omit,
+            pixel_format: PixelFormat::EightBit,
             crop: "".to_string(),
             verbose: false,
         };
@@ -90,12 +92,18 @@ impl Options {
                 .add_option(&["-a", "--asm"], StoreConst(ImageType::Asm), "Save data as assembly source")
                 .add_option(&["-p", "--pal"], StoreConst(ImageType::Pal), "Save the palette as a .pal file")
                 .add_option(&["-N", "--npl"], StoreConst(ImageType::Npl), "Save the palette as a .npl file")
-                .add_option(&["-s", "--slr"], StoreConst(ImageType::Slr), "Save the the image as a slr file");
+                .add_option(&["-s", "--slr"], StoreConst(ImageType::Slr), "Save the the image as a slr file")
+                .add_option(&["-S", "--spr"], StoreConst(ImageType::Spr), "Convert the image to sprites");
 
             parser.refer(&mut options.pal_placement) // only valid for raw output type
                 .add_option(&["-P", "--prepend-palette"], StoreConst(PalettePlacement::Prepend), "Place palette data at the start of the file")
                 .add_option(&["-A", "--append-palette"], StoreConst(PalettePlacement::Append), "Place palette data at the start of end file")
                 .add_option(&["-O", "--no-palette"], StoreConst(PalettePlacement::Omit), "Do not include any palette data");
+
+            parser.refer(&mut options.pixel_format)
+                .add_option(&["-8", "--eight-bit"], StoreConst(PixelFormat::EightBit), "Save the data as 8 bit pixel format")
+                .add_option(&["-4", "--four-bit"], StoreConst(PixelFormat::FourBit), "Save the data as 4 bit pixel format")
+                .add_option(&["-1", "--one-bit"], StoreConst(PixelFormat::OneBit), "Save the data as 1 bit pixel format");
 
             parser.refer(&mut options.verbose)
                 .add_option(&["-v", "--verbose"], StoreTrue, "Be verbose");

@@ -11,7 +11,8 @@ impl Display for ImageType {
             ImageType::Pal => write!(f, "Pal"),
             ImageType::Npl => write!(f, "Npl"),
             ImageType::Sl2 => write!(f, "Sl2"),
-            ImageType::Slr => write!(f, "slr")
+            ImageType::Slr => write!(f, "slr"),
+            ImageType::Spr => write!(f, "Sprite data")
         }
     }
 }

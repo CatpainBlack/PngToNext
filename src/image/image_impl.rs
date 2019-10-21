@@ -3,13 +3,13 @@ extern crate bitstream_io;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
+use argparse::action::ParseResult::Error;
 use byteorder::WriteBytesExt;
 
 use crate::cmdline::PalettePlacement;
-use crate::convert::{PaletteEntry, LAYER2_DEFAULT};
+use crate::convert::{LAYER2_DEFAULT, PaletteEntry};
 use crate::image::{Image, ImageType, PixelFormat};
 use crate::image::ImageError;
-
 use crate::image::resample::Resample;
 use crate::primitives::rectangle::Rectangle;
 
@@ -27,6 +27,7 @@ impl Image {
         let out_bits = match format {
             PixelFormat::FourBit => 4,
             PixelFormat::EightBit => 8,
+            PixelFormat::OneBit => unimplemented!()
         };
         if self.bits_per_pixel < out_bits {
             self.indexed_upsample(out_bits)?;
@@ -127,7 +128,7 @@ impl Image {
     }
 
 
-    pub fn save(&mut self, image_type: ImageType, name: &str) -> Result<(), ImageError> {
+    pub fn save(&mut self, image_type: &ImageType, name: &str) -> Result<(), ImageError> {
         match image_type {
             ImageType::Raw => self.save_raw(name, PalettePlacement::Append),
             ImageType::Nxi => {
@@ -147,6 +148,7 @@ impl Image {
                 self.remap_colours(LAYER2_DEFAULT)?;
                 self.save_raw(name, PalettePlacement::Omit)
             }
+            _ => Err(ImageError::UnsupportedFormat)
         }
     }
 }

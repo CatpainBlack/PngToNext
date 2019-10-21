@@ -1,10 +1,11 @@
 extern crate custom_error;
 
+use std::collections::HashMap;
+
 use custom_error::custom_error;
 use rgb::RGB8;
-use std::collections::HashMap;
-use crate::primitives::rectangle::Rectangle;
 
+use crate::primitives::rectangle::Rectangle;
 
 mod img_from;
 mod image_impl;
@@ -24,11 +25,14 @@ pub enum ImageType {
     Npl,
     Sl2,
     Slr,
+    Spr,
 }
 
+#[derive(Clone)]
 pub enum PixelFormat {
     FourBit,
     EightBit,
+    OneBit,
 }
 
 pub struct Image {
@@ -63,6 +67,7 @@ custom_error! {pub ImageError
     Resample="Could not resample pixel data",
     IOError{m:String}="IO Error {m}",
     L2Size="Image must be 256x192 8 bit indexed colour",
-    PaletteRemap="Could not remap colours"
+    PaletteRemap="Could not remap colours",
+    UnsupportedFormat="Unsupported image format"
 }
 

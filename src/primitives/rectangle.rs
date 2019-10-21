@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug,Copy, Clone)]
 pub struct Rectangle {
     pub left: isize,
     pub top: isize,
@@ -6,7 +6,26 @@ pub struct Rectangle {
     pub height: isize,
 }
 
+
 impl Rectangle {
+    pub fn tile() -> Rectangle {
+        Rectangle {
+            left: 0,
+            top: 0,
+            width: 8,
+            height: 8,
+        }
+    }
+
+    pub fn sprite() -> Rectangle {
+        Rectangle {
+            left: 0,
+            top: 0,
+            width: 16,
+            height: 16,
+        }
+    }
+
     pub fn square(left: isize, top: isize, size: isize) -> Rectangle {
         Rectangle {
             left,

@@ -1,4 +1,4 @@
-use crate::image::ImageType;
+use crate::image::{ImageType, PixelFormat};
 use crate::primitives::rectangle::Rectangle;
 
 pub mod parser;
@@ -23,6 +23,8 @@ pub struct Options {
 
     // Palette
     pal_placement: PalettePlacement,
+
+    pixel_format: PixelFormat,
 
     // Internal
     crop: String,

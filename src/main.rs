@@ -1,10 +1,12 @@
+use std::process::exit;
+
 use crate::cmdline::Options;
 use crate::convert::Process;
 use crate::errors::CmdError;
-use crate::image::{Image, BlockSet};
+use crate::image::{BlockSet, Image, ImageType};
 use crate::image::PixelFormat;
+use crate::image_converter::ImageConverter;
 use crate::png::Png;
-use std::process::exit;
 use crate::primitives::rectangle::Rectangle;
 
 mod cmdline;
@@ -13,6 +15,7 @@ mod convert;
 mod image;
 mod errors;
 mod primitives;
+mod image_converter;
 
 fn main() {
     match convert_image() {
@@ -50,28 +53,26 @@ fn convert_image() -> Result<(), CmdError> {
         png = png.copy_rect(c)?;
     }
 
-    let mut img8 = Image::from(&png);
-    img8.resample(PixelFormat::EightBit)?;
-
-    let mut img4 = Image::from(&png);
-    img4.resample(PixelFormat::FourBit)?;
-
-
-    if options.verbose {
-        println!("Processing map data...");
-    }
-    let mut blocks = BlockSet::new(Rectangle::square(0, 0, 16));
-    blocks.process(&img8);
-    if options.verbose {
-        println!("Grabbed {} unique blocks", blocks.count());
-    }
-
-    if false {
-        if options.verbose {
-            println!("Saving image file: {}", options.out_file_name);
+    match options.output_type {
+        ImageType::Raw |
+        ImageType::Nxi |
+        ImageType::Pal |
+        ImageType::Npl |
+        ImageType::Sl2 |
+        ImageType::Slr => {
+            if options.verbose {
+                println!("Saving image file: {}", options.out_file_name);
+            }
+            let converter = ImageConverter::new(&png)
+                .output_format(options.output_type)
+                .save_as(&options.out_file_name)?;
         }
 
-        img8.save(options.output_type, &options.out_file_name)?;
+        ImageType::Asm => unimplemented!(),
+        ImageType::Spr => {
+            println!("Sprites!");
+        }
     }
+
     Ok(())
 }
